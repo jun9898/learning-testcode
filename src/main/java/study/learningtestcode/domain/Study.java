@@ -44,5 +44,4 @@ public class Study {
 		this.openedDateTime = LocalDateTime.now();
 		this.status = StudyStatus.OPENED;
 	}
-
 }

@@ -1,12 +1,14 @@
 package study.learningtestcode.study;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.MethodOrderer;
@@ -118,6 +120,7 @@ class StudyServiceTest {
 
 	@Test
 	void mock_verify_test() {
+		// given
 		StudyService studyService = new StudyService(memberService, studyRepository);
 
 		when(memberService.findById(1L)).thenReturn(Optional.of(member));
@@ -125,8 +128,11 @@ class StudyServiceTest {
 
 		Member byId = memberService.findById(1L)
 			.orElseThrow(MemberNotFoundException::new);
+
+		// when
 		studyService.createNewStudy(byId.getId(), study);
 
+		// then
 		// memberService의 study 객체를 매개변수로 하는 notify 함수가 한번은 실행되어야 한다.
 		verify(memberService, times(1)).notify(study);
 		verify(memberService, times(1)).notify(member);
@@ -141,5 +147,49 @@ class StudyServiceTest {
 		// verifyNoInteractions(memberService);
 
 		inOrder.verify(memberService).notify(member);
+	}
+
+	@Test
+	void BDD_test() {
+		// given
+		StudyService studyService = new StudyService(memberService, studyRepository);
+
+		// easy
+		// when -> given, thenReturn -> willReturn
+		given(memberService.findById(1L)).willReturn(Optional.of(member));
+		given(studyRepository.save(study)).willReturn(study);
+
+		Member byId = memberService.findById(1L)
+			.orElseThrow(MemberNotFoundException::new);
+
+		// when
+		studyService.createNewStudy(byId.getId(), study);
+
+		// then
+		// easy
+		// verify -> then().should()
+		// memberService의 study 객체를 매개변수로 하는 notify 함수가 한번은 실행되어야 한다.
+		then(memberService).should(times(1)).notify(study);
+		then(memberService).should(times(1)).notify(member);
+		// memberService의 validate 함수는 실행되어서는 안된다.
+		// then(memberService).shouldHaveNoMoreInteractions();
+	}
+
+	@Test
+	@DisplayName("다른 사용자가 볼 수 있도록 스터디를 공개한다")
+	public void open_study() {
+	    //given
+		StudyService studyService = new StudyService(memberService, studyRepository);
+		given(studyRepository.save(study)).willReturn(study);
+
+	    //when
+		studyService.openStudy(study);
+
+	    //then
+		assertEquals(StudyStatus.OPENED, study.getStatus());
+		assertNotNull(study.getOpenedDateTime());
+		then(studyRepository).should(times(1)).save(study);
+		then(memberService).should(times(1)).notify(study);
+
 	}
 }
