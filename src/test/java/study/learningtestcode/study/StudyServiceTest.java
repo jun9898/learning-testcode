@@ -13,6 +13,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -113,5 +114,32 @@ class StudyServiceTest {
 
 		assertNotNull(save.getOwner());
 		assertEquals(save.getOwner(), byId);
+	}
+
+	@Test
+	void mock_verify_test() {
+		StudyService studyService = new StudyService(memberService, studyRepository);
+
+		when(memberService.findById(1L)).thenReturn(Optional.of(member));
+		when(studyRepository.save(study)).thenReturn(study);
+
+		Member byId = memberService.findById(1L)
+			.orElseThrow(MemberNotFoundException::new);
+		studyService.createNewStudy(byId.getId(), study);
+
+		// memberService의 study 객체를 매개변수로 하는 notify 함수가 한번은 실행되어야 한다.
+		verify(memberService, times(1)).notify(study);
+		verify(memberService, times(1)).notify(member);
+		// memberService의 validate 함수는 실행되어서는 안된다.
+		verify(memberService, never()).validate(any());
+
+		// study를 먼저 호출하고 member를 다음에 호출하는가
+		InOrder inOrder = inOrder(memberService);
+		inOrder.verify(memberService).notify(study);
+
+		// memberService.notify(study)가 호출된 후에는 아무것도 호출되어선 안된다.
+		// verifyNoInteractions(memberService);
+
+		inOrder.verify(memberService).notify(member);
 	}
 }
