@@ -2,29 +2,21 @@ package study.learningtestcode.study;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import net.bytebuddy.implementation.bytecode.Throw;
 
 import study.learningtestcode.domain.Member;
 import study.learningtestcode.domain.Study;
-import study.learningtestcode.member.InvalidMemberException;
 import study.learningtestcode.member.MemberNotFoundException;
 import study.learningtestcode.member.MemberService;
 
@@ -114,8 +106,8 @@ class StudyServiceTest {
 
 		Study save = studyRepository.save(newStudy);
 
-		assertNotNull(save.getOwner());
-		assertEquals(save.getOwner(), byId);
+		assertNotNull(save.getOwnerId());
+		assertEquals(save.getOwnerId(), byId.getId());
 	}
 
 	@Test
